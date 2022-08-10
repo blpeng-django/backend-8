@@ -1,9 +1,7 @@
-from .views import getResource, postResource, putResource, deleteResource
+from .views import deleteResource, getResource
 from django.urls import path
 
 urlpatterns = [
-    path('get/', getResource),
-    path('post/', postResource),
-    path('put/', putResource),
-    path('delete/', deleteResource)
+    path('', getResource),
+    path('<primary_key>', deleteResource),
 ]

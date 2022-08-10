@@ -1,4 +1,3 @@
-from operator import is_
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from django.http.response import JsonResponse
@@ -8,7 +7,7 @@ from myapp.serializer import BookSerializer
 
 
 # Create your views here.
-@api_view(["GET"])
+@api_view(["GET", "POST", "PUT"])
 def getResource(request):
     if request.method == "GET":
         data = Book.objects.all()
@@ -16,12 +15,9 @@ def getResource(request):
         # is_valid를 하지않으면 AssertionError가 나와서 임시방편으로 넣음
         print(serializedData.is_valid())
         # 한글이 나오지않는 문제가 생김
-        return JsonResponse({'data': serializedData.data}, )
+        return JsonResponse({'data': serializedData.data})
 
-
-@api_view(["POST"])
-def postResource(request):
-    if request.method == "POST":
+    elif request.method == "POST":
         data = JSONParser().parse(request)
         serializedData = BookSerializer(data=data)
         if serializedData.is_valid():
@@ -30,11 +26,9 @@ def postResource(request):
         else:
             return JsonResponse({'success': False})
 
-
-@api_view(["PUT"])
-def putResource(request):
-    if request.method == "PUT":
+    elif request.method == "PUT":
         data = JSONParser().parse(request)
+        print("data: ", data)
         if Book.objects.get(name=data["name"]) is not None:
             query = Book.objects.get(name=data["name"])
             serializedData = BookSerializer(query, data=data)
@@ -48,10 +42,11 @@ def putResource(request):
 
 
 @api_view(["DELETE"])
-def deleteResource(request):
-    if request.data == "DELETE":
-        data = JSONParser().parse(request)
-        if Book.objects.get(name=data["name"]) is not None:
-            query = Book.objects.get(name=data["name"])
-            query.delete()
-            return JsonResponse({'success': True})
+def deleteResource(request, primary_key):
+    if request.method == "DELETE":
+        try:
+            data = Book.objects.get(pk=primary_key)
+        except Book.DoesNotExist:
+            return JsonResponse({"message": "does not exist"})
+        data.delete()
+        return JsonResponse({"success": True})
