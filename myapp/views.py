@@ -7,6 +7,7 @@ from myapp.serializer import BookSerializer
 
 
 # Create your views here.
+# DELTE도 만들어서 전체 삭제기능 만들기
 @api_view(["GET", "POST", "PUT"])
 def getResource(request):
     if request.method == "GET":
