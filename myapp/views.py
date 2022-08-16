@@ -12,10 +12,11 @@ def allResource(request):
     if request.method == "GET":
         data = Book.objects.all()
         serializedData = BookSerializer(data=data, many=True)
-        # is_valid를 하지않으면 AssertionError가 나와서 임시방편으로 넣음
-        serializedData.is_valid()
-        # 한글이 유니코드로 변하는 문제를 json_dumps_params={'ensure_ascii': False}로 해결함
-        return JsonResponse({'data': serializedData.data, 'message': "Get is success"}, json_dumps_params={'ensure_ascii': False}, status=200)
+        if serializedData.is_valid(raise_exception=True):
+            # 한글이 유니코드로 변하는 문제를 json_dumps_params={'ensure_ascii': False}로 해결함
+            return JsonResponse({'data': serializedData.data, 'message': "Get is success"}, json_dumps_params={'ensure_ascii': False}, status=200)
+        else:
+            return JsonResponse({'data': serializedData.errors})
 
     elif request.method == "POST":
         data = JSONParser().parse(request)
@@ -55,9 +56,9 @@ def aResource(request, primary_key):
         # data = [Book.objects.get(pk=primary_key)]
         data = Book.objects.filter(pk=primary_key)
         serializedData = BookSerializer(data=data, many=True)
-        serializedData.is_valid()
-        # serializedData.data의 타입은 OrderedDict
-        return JsonResponse({"data": serializedData.data, "message": "Get is success"}, json_dumps_params={'ensure_ascii': False}, status=200)
+        if serializedData.is_valid(raise_exception=True):
+            # serializedData.data의 타입은 OrderedDict
+            return JsonResponse({"data": serializedData.data, "message": "Get is success"}, json_dumps_params={'ensure_ascii': False}, status=200)
 
     elif request.method == "DELETE":
         # 찾는 데이터가 없을경우를 위한 예외처리
